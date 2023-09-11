@@ -53,10 +53,10 @@ def get_images():
         print('<--Ошибка! Фото товара не найдено-->')
 
 
-print(get_title())
+print('Название:', get_title())
 print('------------')
-print(get_vendor_code())
+print('Артикул:', get_vendor_code())
 print('------------')
-print(get_price())
+print('Цена:', get_price())
 print('------------')
-print(get_images())
+print('Список ссылок на картинки:', get_images())
