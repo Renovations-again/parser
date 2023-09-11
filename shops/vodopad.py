@@ -1,11 +1,19 @@
-from urllib.request import urlopen
+import requests
 import re
 
 import lxml  # noqa
 from bs4 import BeautifulSoup
+from fake_useragent import UserAgent
+
+ua = UserAgent()
 
 domain = 'https://vodopad.ru'
-html = urlopen('https://vodopad.ru/catalog/dlya-vannoy-127087/keramogranit-cersanit-lofthouse-svetlo-seryy-relef-29-7x59-8-kv-m-244423/')  # noqa
+url = 'https://vodopad.ru/catalog/dlya-vannoy-127087/keramogranit-cersanit-lofthouse-svetlo-seryy-relef-29-7x59-8-kv-m-244423/'  # noqa
+headers = {
+    'Accept': '*/*',
+    'User-Agent': ua.random
+}
+html = requests.get(url, headers=headers).text
 bs = BeautifulSoup(html, 'lxml')
 
 
