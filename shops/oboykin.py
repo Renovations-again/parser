@@ -62,8 +62,8 @@ def get_price():
                 'span', string='Цена за упаковку:'
             ).text
             spec_price = special.find(class_='rub').text
-            return f'Цена {units}: {int(price)}\n{spec_title} {spec_price}'
-        return f'Цена {units}: {int(price)}'
+            return f'Цена {units}: {float(price)}\n{spec_title} {spec_price}'
+        return f'Цена {units}: {float(price)}'
     except AttributeError:
         print('<--Ошибка! У данного товара нет цены-->')
 

@@ -1,14 +1,14 @@
-import requests
 import re
 
 import lxml  # noqa
+import requests
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 
 ua = UserAgent()
 
 domain = 'https://vodopad.ru'
-url = 'https://vodopad.ru/catalog/dlya-vannoy-127087/keramogranit-cersanit-lofthouse-svetlo-seryy-relef-29-7x59-8-kv-m-244423/'  # noqa
+url = 'https://vodopad.ru/catalog/elektricheskie-nakopitelnye-vodonagrevateli-109608/vodonagrevatel-thermex-mk-80-v-102916/'  # noqa
 headers = {
     'Accept': '*/*',
     'User-Agent': ua.random
@@ -40,7 +40,7 @@ def get_price():
     '''Get the price of an item (Цена товара)'''
     try:
         raw_price = bs.find('span', class_='prdct-prc mt-1')
-        price = int(raw_price.text.replace('₽', '').replace(' ', '').strip())
+        price = float(raw_price.text.replace('₽', '').replace(' ', '').strip())
         return price
     except AttributeError:
         print('<--Ошибка! У данного товара нет цены-->')
