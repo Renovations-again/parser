@@ -34,5 +34,5 @@ CITY_PETROVICH = {
     'tula': 'tul',
     'cheboksary': 'cheb',
     'engels': 'engl',
-    'petrovich': 'spb',  # Санкт-Петербург без поддомена
+    'petrovich': 'spb',
 }
