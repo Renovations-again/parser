@@ -2,6 +2,7 @@ from urllib.parse import urlparse
 
 import requests
 import uvicorn
+from constants import CITY_PETROVICH
 from fastapi import FastAPI
 
 app = FastAPI()
@@ -11,6 +12,10 @@ def parse_petrovich(url):
     parsed_url = urlparse(url)
     path = urlparse(url).path
     category = path.split('/')
+    city_domen = parsed_url.netloc.split('.')
+    city_code = 'rf'
+    if city_domen[0] in CITY_PETROVICH:
+        city_code = CITY_PETROVICH[city_domen[0]]
 
     cookies = {
         'geoQtyTryRedirect': '1',
@@ -72,7 +77,7 @@ def parse_petrovich(url):
 
     params = {
         'section_code': category[2],
-        'city_code': 'msk',
+        'city_code': city_code,
         'client_id': 'pet_site',
     }
 
