@@ -7,16 +7,16 @@ from fastapi import FastAPI
 
 app = FastAPI()
 
-
 def parse_petrovich(url):
-    parsed_url = urlparse(url)
-    path = urlparse(url).path
-    category = path.split('/')
+    # Можно вынести логику парсинга урла в отдельную функцию, возможно ее можно сделать одну для всех магазинов
+    parsed_url = urlparse(url)    
+    path = urlparse(url).path    
+    category = path.split('/')    
     city_domen = parsed_url.netloc.split('.')
     city_code = 'rf'
     if city_domen[0] in CITY_PETROVICH:
         city_code = CITY_PETROVICH[city_domen[0]]
-
+    # Куки ведь используются одни для всех запросов? можно тоже вынести в отдельный файл рядом с константами
     cookies = {
         'geoQtyTryRedirect': '1',
         'u__geoUserChoose': '1',
@@ -84,10 +84,13 @@ def parse_petrovich(url):
     code = category[3]
     api_url = 'https://api.petrovich.ru/catalog/v3/products/' + str(code)
     response = requests.get(api_url, cookies=cookies, headers=headers, params=params)
-
+    # Лучше пойти от обратного и если статус != 200 сделать рейз 404 ошибки
+    # Вместо статус кодов цифрами используем status.HTTP_200_OK и подобные
     if response.status_code == 200:
         data = response.json()
+        # Чтобы все не поломалось если вдруг придет кривой словарь достаем инфу всегда через dict.get()
         product = data['data']['product']
+        # Если интересно, можно вместо самописного словаря обработать данные через Pydantic
         product_info = {
             'title': product['title'],
             'code': product['code'],
@@ -104,11 +107,12 @@ def parse_petrovich(url):
 def parse_vodopad():
     pass
 
-
+# post, а не get запрос
 @app.get('/')
 async def get_product_by_store(url: str):
     # Определяем магазин на основе структуры URL
     parsed_url = urlparse(url)
+    # лучше сделать для каждого магазина свой эндпоинт и для проверки url использовать валидатор или регулярку
     if 'petrovich' in parsed_url.netloc:
         return parse_petrovich(url)
     elif 'vodopad' in parsed_url.netloc:
@@ -116,6 +120,9 @@ async def get_product_by_store(url: str):
     else:
         return {'error': 'Магазин с таким идентификатором не найден'}
 
-
+# В целом, можно сразу разделить всю логику приложения, чтобы не было проблем в дальнейшем
+# В main - инициализация приложения. Роутеры - отдельно в папке api, вспомогательные функции - в сервисах или где-нибудь еще.
+# https://fastapi.tiangolo.com/tutorial/bigger-applications/
+# https://github.com/nsidnev/fastapi-realworld-example-app
 if __name__ == '__main__':
     uvicorn.run('main:app', reload=True)
