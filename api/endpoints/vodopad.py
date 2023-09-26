@@ -1,10 +1,11 @@
 import re
+from http import HTTPStatus
 
 import lxml  # noqa
 import requests
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from api.validators import validate_domain
 
@@ -23,14 +24,15 @@ async def parse_vodopad(url):
     }
 
     def fetch_soup(url):
-        try:
-            request = requests.get(url, headers=headers)
-            request.raise_for_status()  # Проверка на успешный статус ответа
-            soup = BeautifulSoup(request.text, 'lxml')
+        response = requests.get(url, headers=headers)
+        if response.status_code != HTTPStatus.OK:
+            raise HTTPException(
+                status_code=404,
+                detail='Не удалось получить информацию о товаре',
+            )
+        else:
+            soup = BeautifulSoup(response.text, 'lxml')
             return soup
-        except requests.exceptions.RequestException as err:
-            print(f'Ошибка соединения: {err}')
-            return None
 
     def get_title(soup):
         '''Get the name of the item (Название товара)'''
