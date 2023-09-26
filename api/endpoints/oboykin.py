@@ -1,7 +1,7 @@
-from http import HTTPStatus
-
-import lxml  # noqa
 import requests
+
+from http import HTTPStatus
+import lxml  # noqa
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 from fastapi import APIRouter, HTTPException
@@ -14,8 +14,9 @@ ua = UserAgent()
 
 
 @router.post('/')
-async def parse_maxidom(url):
+async def parse_oboykin(url):
     validate_domain(url)
+    domain = 'https://oboykin.ru'
     headers = {
         'Accept': '*/*',
         'User-Agent': ua.random
@@ -33,10 +34,14 @@ async def parse_maxidom(url):
             return soup
 
     def get_title(soup):
-        '''Get the name of the item (Название товара)'''
+        '''Get the name of an item (Название товара)'''
         try:
-            title = soup.find('h1').text
-            return title
+            title = soup.find('h1')
+            # У некоторых товаров есть дополнительное имя под основным
+            if title.fetchNextSiblings('p'):
+                verbose_name = title.fetchNextSiblings('p')[0].text
+                return f'{title.text} ({verbose_name})'
+            return title.text
         except AttributeError:
             raise HTTPException(
                 status_code=404, detail='Ошибка! Название товара не найдено'
@@ -45,9 +50,12 @@ async def parse_maxidom(url):
     def get_vendor_code(soup):
         '''Get vendor code of an item (Артикул товара)'''
         try:
-            vendor_code = soup.find(
-                'div', class_='flypage__lineinfo-code'
-                ).text
+            description = soup.find(
+                'div', class_='page-tovarpage__description__info'
+            ).find('ul').find_all('li')
+            for item in description:
+                if item.find(string='Артикул'):
+                    vendor_code = item.find(string='Артикул').find_next().text
             return vendor_code
         except AttributeError:
             raise HTTPException(
@@ -57,21 +65,10 @@ async def parse_maxidom(url):
     def get_price(soup):
         '''Get the price of an item (Цена товара)'''
         try:
-            # get price_1
-            price_block = soup.select('div.lvl1__product-body-buy-price-base')
-            for p in price_block:
-                price_unit = float(p.get('data-repid_price'))
-                break
-
-            # get unit_1
-            price_block = soup.find(
-                'div', class_='lvl1__product-body-buy-price-base'
-            )
-            unit = price_block.find(
-                'span', class_='lvl1__product-body-buy-price-measure'
-            ).contents[0]
-
-            return price_unit, unit
+            identifier = soup.find('div', class_='page-tovarpage__price')
+            price = identifier.find('div', class_='sum').text.replace(' ', '')
+            units = identifier.find('div', class_='units').text
+            return float(price), units
         except AttributeError:
             raise HTTPException(
                 status_code=404, detail='Ошибка! У данного товара нет цены'
@@ -80,16 +77,13 @@ async def parse_maxidom(url):
     def get_images(soup):
         '''Returns a list of all the images of an item (Ссылки на картинки)'''
         try:
-            img_block = soup.find(
-                'div', {'id': 'flypage_slider_large_vertical_base'}
-            )
-            images = img_block.find(
-                'div', class_='swiper-wrapper'
-            ).findChildren()
-            link_images = [
-                image.get('src') for image in images if image.get('src')
-            ]
-            return link_images
+            raw_images = soup.find(
+                'div', {'class': 'owl-carousel'}
+            ).find_all('a')
+            images = []
+            for item in raw_images:
+                images.append(domain + item['href'])
+            return images
         except AttributeError:
             raise HTTPException(
                 status_code=404, detail='Ошибка! Фото товара не найдено'

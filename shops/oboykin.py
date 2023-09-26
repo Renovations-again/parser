@@ -6,7 +6,7 @@ from fake_useragent import UserAgent
 
 ua = UserAgent()
 
-domain = 'https://vodopad.ru'
+domain = 'https://oboykin.ru'
 url = 'https://www.oboykin.ru/catalog/russia/biber/plenka-zashhitnaya/31811/'  # noqa
 headers = {
     'Accept': '*/*',
