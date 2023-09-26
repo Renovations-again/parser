@@ -1,4 +1,3 @@
-import re
 from http import HTTPStatus
 
 import lxml  # noqa
@@ -15,9 +14,8 @@ ua = UserAgent()
 
 
 @router.post('/')
-async def parse_vodopad(url):
+async def parse_maxidom(url):
     validate_domain(url)
-    domain = 'https://vodopad.ru'
     headers = {
         'Accept': '*/*',
         'User-Agent': ua.random
@@ -37,7 +35,7 @@ async def parse_vodopad(url):
     def get_title(soup):
         '''Get the name of the item (Название товара)'''
         try:
-            title = soup.find('div', class_='prdct-blck-header').text.strip()
+            title = soup.find('h1').text
             return title
         except AttributeError:
             raise HTTPException(
@@ -47,8 +45,9 @@ async def parse_vodopad(url):
     def get_vendor_code(soup):
         '''Get vendor code of an item (Артикул товара)'''
         try:
-            raw_vendor_code = soup.find('span', class_='prdct-artcl')
-            vendor_code = re.findall('[0-9]+', raw_vendor_code.text)[0]
+            vendor_code = soup.find(
+                'div', class_='flypage__lineinfo-code'
+                ).text
             return vendor_code
         except AttributeError:
             raise HTTPException(
@@ -58,10 +57,21 @@ async def parse_vodopad(url):
     def get_price(soup):
         '''Get the price of an item (Цена товара)'''
         try:
-            raw_price = soup.find('span', class_='prdct-prc mt-1')
-            price = float(
-                raw_price.text.replace('₽', '').replace(' ', '').strip())
-            return price
+            # get price_1
+            price_block = soup.select('div.lvl1__product-body-buy-price-base')
+            for p in price_block:
+                price_unit = int(p.get('data-repid_price'))
+                break
+
+            # get unit_1
+            price_block = soup.find(
+                'div', class_='lvl1__product-body-buy-price-base'
+            )
+            unit = price_block.find(
+                'span', class_='lvl1__product-body-buy-price-measure'
+            ).contents[0]
+
+            return price_unit, unit
         except AttributeError:
             raise HTTPException(
                 status_code=404, detail='Ошибка! У данного товара нет цены'
@@ -70,13 +80,16 @@ async def parse_vodopad(url):
     def get_images(soup):
         '''Returns a list of all the images of an item (Ссылки на картинки)'''
         try:
-            raw_images = soup.find('div', class_='col-12 col-prdct-gallery')
-            images = raw_images.find_all('div', class_='swiper-slide')
-            photos_count = int(len(images) / 2)
-            links = []
-            for image in images[:photos_count]:
-                links.append(domain + image.img['data-src'])
-            return links
+            img_block = soup.find(
+                'div', {'id': 'flypage_slider_large_vertical_base'}
+            )
+            images = img_block.find(
+                'div', class_='swiper-wrapper'
+            ).findChildren()
+            link_images = [
+                image.get('src') for image in images if image.get('src')
+            ]
+            return link_images
         except AttributeError:
             raise HTTPException(
                 status_code=404, detail='Ошибка! Фото товара не найдено'
@@ -87,8 +100,8 @@ async def parse_vodopad(url):
     return {
         'title': get_title(soup),
         'code': get_vendor_code(soup),
-        'price_gold': get_price(soup),
-        'price_retail': get_price(soup),
-        'unit': 'шт',
+        'price_gold': get_price(soup)[0],
+        'price_retail': get_price(soup)[0],
+        'unit': get_price(soup)[1],
         'images': get_images(soup),
     }
