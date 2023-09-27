@@ -4,7 +4,8 @@ from api.endpoints import (
     petrovich_api_router,
     vodopad_api_router,
     maxidom_api_router,
-    oboykin_api_router
+    oboykin_api_router,
+    obi_api_router
 )
 
 main_router = APIRouter()
@@ -19,4 +20,7 @@ main_router.include_router(
 )
 main_router.include_router(
     oboykin_api_router, prefix='/oboykin', tags=['Обойкин']
+)
+main_router.include_router(
+    obi_api_router, prefix='/obi', tags=['Оби']
 )

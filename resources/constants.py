@@ -4,6 +4,7 @@ DOMAINS_SHOPS = [
     'petrovich.ru',
     'maxidom.ru',
     'oboykin.ru',
+    'obi.ru'
 ]
 
 CITY_PETROVICH = {
