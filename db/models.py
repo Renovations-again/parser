@@ -1,3 +1,4 @@
+import asyncio
 from uuid import uuid4
 
 from sqlalchemy import String
@@ -10,6 +11,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
+
+from db import async_engine
 
 
 class Base(DeclarativeBase):
@@ -42,12 +45,12 @@ class Product(Base):
     url: Mapped[str] = mapped_column(String(250), nullable=False, unique=True)
     unit: Mapped[str] = mapped_column(String(50))
     vendor_code: Mapped[str] = mapped_column(String(50), index=True)
-    shop_id: Mapped[int] = mapped_column(ForeignKey('shop.id'))
+    shop_id: Mapped[int] = mapped_column(ForeignKey('shops.id'))
     city_id: Mapped[int] = mapped_column(ForeignKey('cities.id'))
-    shop: Mapped['Shop'] = relationship(
+    shop: Mapped['Shop'] = relationship(back_populates='products')
+    city: Mapped[list['City']] = relationship(
         back_populates='products', cascade='all, delete-orphan'
     )
-    city: Mapped['City'] = relationship(back_populates='products')
 
     def __repr__(self):
         '''Representation of a string object.
@@ -67,7 +70,9 @@ class Shop(Base):
     __tablename__ = 'shops'
 
     title: Mapped[str] = mapped_column(String(250))
-    product: Mapped['Product'] = relationship(back_populates='shop')
+    product: Mapped[list['Product']] = relationship(
+        back_populates='shops', cascade='all, delete-orphan'
+    )
 
     def __repr__(self):
         '''Representation of a string object.
@@ -89,6 +94,9 @@ class City(Base):
     title: Mapped[str] = mapped_column(String(250), unique=True)
     price_id: Mapped[int] = mapped_column(ForeignKey('prices.id'))
     product: Mapped['Product'] = relationship(back_populates='cities')
+    price: Mapped[list['Price']] = relationship(
+        back_populates='cities', cascade='all, delete-orphan'
+    )
 
     def __repr__(self):
         '''Representation of a string object.
@@ -113,7 +121,7 @@ class Price(Base):
         server_default=func.current_timestamp(),
         nullable=False,
     )
-    city: Mapped['City'] = relationship(back_populates='price', uselist=False)
+    city: Mapped['City'] = relationship(back_populates='price')
 
     def __repr__(self):
         '''Representation of a string object.
@@ -125,3 +133,11 @@ class Price(Base):
             id=self.id,
             title=self.title,
         )
+
+
+async def init_models():
+    async with async_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
+
+asyncio.run(init_models())
