@@ -12,7 +12,7 @@ from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 
-from db import async_engine
+from parsing.db.database import async_engine
 
 
 class Base(DeclarativeBase):
