@@ -12,8 +12,6 @@ from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 
-from parsing.db.database import async_engine
-
 
 class Base(DeclarativeBase):
     '''Base model derived from DeclarativeBase class.'''
