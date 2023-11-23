@@ -1,10 +1,9 @@
-from typing import AsyncGenerator
+# from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import (
     create_async_engine, async_sessionmaker, AsyncSession
 )
 
-from parsing.core.config import settings
-
+from core.config import settings
 
 async_engine = create_async_engine(
     settings.db_url_asyncpg, future=True, echo=True
