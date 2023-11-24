@@ -1,5 +1,6 @@
 # import uvicorn
 
+import asyncio
 from fastapi import FastAPI
 
 from api.routers import main_router
@@ -12,4 +13,4 @@ app.include_router(main_router)
 
 if __name__ == '__main__':
     # uvicorn.run('main:app', reload=True)
-    insert_data()
+    asyncio.run(insert_data())

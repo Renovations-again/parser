@@ -45,9 +45,9 @@ class Product(Base):
     vendor_code: Mapped[str] = mapped_column(String(50), index=True)
     shop_id: Mapped[int] = mapped_column(ForeignKey('shops.id'))
     city_id: Mapped[int] = mapped_column(ForeignKey('cities.id'))
-    shop: Mapped['Shop'] = relationship(back_populates='products')
+    shop: Mapped['Shop'] = relationship(back_populates='product')
     city: Mapped[list['City']] = relationship(
-        back_populates='products', cascade='all, delete-orphan'
+        back_populates='product'
     )
 
     def __repr__(self):
@@ -69,7 +69,7 @@ class Shop(Base):
 
     title: Mapped[str] = mapped_column(String(250))
     product: Mapped[list['Product']] = relationship(
-        back_populates='shops', cascade='all, delete-orphan'
+        back_populates='shop'
     )
 
     def __repr__(self):
@@ -91,9 +91,9 @@ class City(Base):
 
     title: Mapped[str] = mapped_column(String(250), unique=True)
     price_id: Mapped[int] = mapped_column(ForeignKey('prices.id'))
-    product: Mapped['Product'] = relationship(back_populates='cities')
+    product: Mapped['Product'] = relationship(back_populates='city')
     price: Mapped[list['Price']] = relationship(
-        back_populates='cities', cascade='all, delete-orphan'
+        back_populates='city'
     )
 
     def __repr__(self):
