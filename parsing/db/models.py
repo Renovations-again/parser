@@ -39,8 +39,8 @@ class Product(Base):
 
     __tablename__ = 'products'
 
-    title: Mapped[str] = mapped_column(String(250))
-    url: Mapped[str] = mapped_column(String(250), nullable=False, unique=True)
+    title: Mapped[str] = mapped_column(String)
+    url: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     unit: Mapped[str] = mapped_column(String(50))
     vendor_code: Mapped[str] = mapped_column(String(50), index=True)
     shop_id: Mapped[int] = mapped_column(ForeignKey('shops.id'))
