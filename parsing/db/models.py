@@ -41,8 +41,8 @@ class Product(Base):
 
     title: Mapped[str] = mapped_column(String)
     url: Mapped[str] = mapped_column(String, nullable=False, unique=True)
-    unit: Mapped[str] = mapped_column(String(50))
-    vendor_code: Mapped[str] = mapped_column(String(50), index=True)
+    unit: Mapped[str] = mapped_column(String)
+    vendor_code: Mapped[str] = mapped_column(String, index=True)
     shop_id: Mapped[int] = mapped_column(ForeignKey('shops.id'))
     city_id: Mapped[int] = mapped_column(ForeignKey('cities.id'))
     shop: Mapped['Shop'] = relationship(back_populates='product')
@@ -67,7 +67,7 @@ class Shop(Base):
 
     __tablename__ = 'shops'
 
-    title: Mapped[str] = mapped_column(String(250))
+    title: Mapped[str] = mapped_column(String)
     product: Mapped[list['Product']] = relationship(
         back_populates='shop'
     )
@@ -89,7 +89,7 @@ class City(Base):
 
     __tablename__ = 'cities'
 
-    title: Mapped[str] = mapped_column(String(250), unique=False)
+    title: Mapped[str] = mapped_column(String, unique=False)
     price_id: Mapped[int] = mapped_column(ForeignKey('prices.id'))
     product: Mapped['Product'] = relationship(back_populates='city')
     price: Mapped[list['Price']] = relationship(
