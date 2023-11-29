@@ -89,7 +89,7 @@ class City(Base):
 
     __tablename__ = 'cities'
 
-    title: Mapped[str] = mapped_column(String(250), unique=True)
+    title: Mapped[str] = mapped_column(String(250), unique=False)
     price_id: Mapped[int] = mapped_column(ForeignKey('prices.id'))
     product: Mapped['Product'] = relationship(back_populates='city')
     price: Mapped[list['Price']] = relationship(
