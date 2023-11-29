@@ -7,21 +7,22 @@ from test_csv import get_data_from_csv
 async def insert_data_vodopad():
     async with async_session_maker() as session:
         for item in get_data_from_csv():
+            example_insertion_price = Price(
+                price=item['price'],
+                date=item['date'],
+            )
             example_insertion_city = City(
-                title=item['city']
-            )  # , price_id=City.id)
+                title=item['city'],
+                price=example_insertion_price)
             example_insertion_product = Product(
                 title=item['title'],
                 url=item['url'],
                 unit=item['unit'],
                 vendor_code=item['vendor_code'],
-            )
-            example_insertion_price = Price(
-                price=item['price'],
-                date=item['date'],
+                city=example_insertion_city
             )
             example_insertion_shop = Shop(title=item['shop'])
-
+            example_insertion_shop.product.append(example_insertion_product)
             session.add_all([
                 example_insertion_city,
                 example_insertion_price,
